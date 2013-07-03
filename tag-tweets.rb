@@ -18,9 +18,17 @@ end
 # 트윗 출력하고 의견 받기
 def tagging(tweet, id, sample_number)
   signs = ["", "[1]Positive", "[2]Negative", "[3]Neutral", "[4]ETC"]
-  sign = tweet['TAG'].nil? ? '' : " <<" + signs[tweet['TAG'].to_i] + ">>"
-  print "\n[#{id+1}/#{sample_number}] "
-  puts "#{tweet['tweetString']} #{sign}"
+  sign = tweet[id]['TAG'].nil? ? '' : " <<" + signs[tweet[id]['TAG'].to_i] + ">>"
+  # if tweet.count { |row| row["TAG"] == nil } == 0
+  if tweet[0]['TAG']
+    tagged = tweet.count { |row| row["TAG"] == '1' or row["TAG"] == '2' or row["TAG"] == '3' }
+  else
+    tagged = 0
+  end
+
+  print "\n[#{tagged};#{id+1}/#{sample_number}] "
+  # print "\n[#{id+1}/#{sample_number}] "
+  puts "#{tweet[id]['tweetString']} #{sign}"
   print "([1]Positive [2]Negative [3]Neutral [4]ETC [M]ore) => "
   key = STDIN.getch
   if key == 'm'
@@ -50,11 +58,13 @@ def find_untagged(tweet)
   tweet.index(last)
 end
 
+# 태깅한 개수 세기
+def count_tag(array, tag)
+  array.count { |row| row["TAG"] == tag }
+end
+
 # 상태 표시
 def show_status(tweet)
-  def count_tag(hash, tag)
-    hash.count { |row| row["TAG"] == tag }
-  end
   tagged_detail = "(#{count_tag(tweet, "1")}/#{count_tag(tweet, "2")}/#{count_tag(tweet, "3")}/#{count_tag(tweet, "4")})"
   total = tweet.length
   untagged = count_tag(tweet, nil)
@@ -76,7 +86,7 @@ tagged = find_untagged(sample_tweet)
 tagged = 0 if tagged.nil?
 show_status(sample_tweet)
 begin
-  tag = tagging(sample_tweet[tagged], tagged, sample_tweet.length)
+  tag = tagging(sample_tweet, tagged, sample_tweet.length)
   case tag
   when '1'..'4'
     puts "OK, #{tag}"
